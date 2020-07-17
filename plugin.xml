@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+    id="cordova-plugin-thai-id-card-ftr301"
+    version="1.0.0">
+    <name>Thai Id Card FTR301 Cordova Plugin</name>
+    <description>A cordova plugin for reading Thai id card data by using a Feitian R301 reader.</description>
+    <license>MIT</license>
+    <keywords></keywords>
+    <repo>https://github.com/rathapolk/cordova-plugin-thai-id-card-ftr301.git</repo>
+    <issue>https://github.com/rathapolk/cordova-plugin-thai-id-card-ftr301/issues</issue>
+
+    <!-- ios -->
+    <platform name="ios">
+        <js-module src="www/plugin.js" name="ThaiIdCardCordovaPlugin">
+            <clobbers target="window.ThaiIdCardCordovaPlugin" />
+        </js-module>
+        <config-file target="config.xml" parent="/*">
+            <feature name="ThaiIdCardCordovaPlugin">
+                <param name="ios-package" value="ThaiIdCardCordovaPlugin" onload="true" />
+            </feature>
+        </config-file>
+
+        <header-file src="src/ios/ThaiIdCardCordovaPlugin.h" />
+        <source-file src="src/ios/ThaiIdCardCordovaPlugin.m" />
+
+        <header-file src="src/ios/include/ft301u.h" />
+        <header-file src="src/ios/include/ReaderInterface.h" />
+        <header-file src="src/ios/include/winscard.h" />
+        <header-file src="src/ios/include/wintypes.h" />
+
+        <framework src="ExternalAccessory.framework"/>
+        <source-file src="src/ios/lib/libiRockey301_ccid_V1.32.5_Release.a" framework="true" />
+
+        <config-file target="*-Info.plist" parent="UISupportedExternalAccessoryProtocols">
+            <array>
+		        <string>com.ftsafe.iR301</string>
+	        </array>
+        </config-file>
+    </platform>
+</plugin>

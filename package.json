@@ -1,0 +1,24 @@
+{
+  "name": "cordova-plugin-thai-id-card-ftr301",
+  "version": "1.0.0",
+  "description": "A cordova plugin for reading Thai id card data by using a Feitian R301 reader.",
+  "cordova": {
+    "id": "cordova-plugin-thai-id-card-ftr301",
+    "platforms": [
+      "android",
+      "ios"
+    ]
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Cordova",
+    "Plugin",
+    "Thai",
+    "Id",
+    "Card",
+    "Feitian",
+    "R301"
+  ]
+}
