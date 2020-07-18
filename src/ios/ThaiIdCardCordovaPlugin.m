@@ -132,8 +132,8 @@
                 return;
             }
             
-            NSString *personalInfoTh = [personalInfo substringWithRange:NSMakeRange(0, 100)];
-            NSString *personalInfoEn = [personalInfo substringWithRange:NSMakeRange(100, 100)];
+            NSString *personalInfoTh = [[personalInfo substringWithRange:NSMakeRange(0, 100)] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+            NSString *personalInfoEn = [[personalInfo substringWithRange:NSMakeRange(100, 100)] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
             
             sex = [personalInfo substringWithRange:NSMakeRange(208, 1)];
             NSArray *thaiComponentsArray = [personalInfoTh componentsSeparatedByString: @"#"];
@@ -177,18 +177,32 @@
                 [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
                 return;
             }
-            
-            NSArray *addressComponents = [address componentsSeparatedByString:@"#"];
+            NSString *trimmedAddress = [address stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+            NSArray *addressComponents = [trimmedAddress componentsSeparatedByString:@"#"];
             if (addressComponents.count >= 8) {
-                houseNo = addressComponents[0];
-                village = addressComponents[1];
-                lane = addressComponents[2];
-                road = addressComponents[3];
-                subdistrict = addressComponents[5];
-                district = addressComponents[6];
-                province = addressComponents[7];
+                houseNo = [addressComponents[0] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+                village = [addressComponents[1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+                lane = [addressComponents[2] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+                road = [addressComponents[3] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+                subdistrict = [addressComponents[5] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+                district = [addressComponents[6] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+                province = [addressComponents[7] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
                 
-                addressLine = [addressComponents componentsJoinedByString:@" "];
+                NSMutableString *addressLineBuilder = [NSMutableString stringWithCapacity:100];
+                [addressLineBuilder appendString:houseNo];
+                [addressLineBuilder appendString:@" "];
+                [addressLineBuilder appendString:village];
+                [addressLineBuilder appendString:@" "];
+                [addressLineBuilder appendString:lane];
+                [addressLineBuilder appendString:@" "];
+                [addressLineBuilder appendString:road];
+                [addressLineBuilder appendString:@" "];
+                [addressLineBuilder appendString:subdistrict];
+                [addressLineBuilder appendString:@" "];
+                [addressLineBuilder appendString:district];
+                [addressLineBuilder appendString:@" "];
+                [addressLineBuilder appendString:province];
+                addressLine = addressLineBuilder;
             }
         }
         
