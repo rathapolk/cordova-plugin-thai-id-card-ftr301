@@ -2,7 +2,7 @@
 
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
     id="cordova-plugin-thai-id-card-ftr301"
-    version="1.0.0">
+    version="1.0.1">
     <name>Thai Id Card FTR301 Cordova Plugin</name>
     <description>A cordova plugin for reading Thai id card data by using a Feitian R301 reader.</description>
     <license>MIT</license>
