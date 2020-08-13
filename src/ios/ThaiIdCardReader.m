@@ -1,6 +1,6 @@
 //
-//  ThaiIdReader.m
-//  ThaiIdReader
+//  ThaiIdCardReader.m
+//  ThaiIdCardReader
 //
 //  Created by NewTech on 31/7/2563 BE.
 //  Copyright © 2563 NewTech. All rights reserved.
@@ -82,14 +82,14 @@
     if (res != SCARD_S_SUCCESS) {
         [self disconnectAndReleaseContext:hCard context:context];
         
-        NSLog(@"SCardConnect failed: res %X", res);
+        NSLog(@"SCardConnect failed: res %d", res);
         NSString *errorMessage = @"Card not present.";
         NSException *exception = [NSException exceptionWithName:@"ThaiIdReaderException" reason:errorMessage userInfo:nil];
         @throw exception;
     }
     
     // Select Applet
-    if (![self selectApplet:hCard]) {
+    if ([self selectApplet:hCard] == nil) {
         [self disconnectAndReleaseContext:hCard context:context];
         
         NSLog(@"SCardTransmit failed: res %X", res);
@@ -251,30 +251,26 @@
     return message;
 }
 
-- (BOOL)selectApplet:(SCARDHANDLE)hCard {
+- (NSData *)selectApplet:(SCARDHANDLE)hCard {
     BYTE selectCommand[] = { 0x00, 0xA4, 0x04, 0x00, 0x08, 0xA0, 0x00, 0x00, 0x00, 0x54, 0x48, 0x00, 0x01 };
     NSData *response = [self transmit:hCard commandApdu:[NSData dataWithBytes:selectCommand length:sizeof(selectCommand)]];
-    if (response == nil) {
-        return NO;
+    if (![self responseOk:response]) {
+        return nil;
     }
-    return YES;
+    return response;
 }
 
 - (NSString *)readCitizenId:(SCARDHANDLE) hCard {
+    const int CITIZEN_ID_LENGTH = 13;
     BYTE command[] = { 0x80, 0xb0, 0x00, 0x04, 0x02, 0x00, 0x0d };
     NSData *response = [self transmitAndGetResponse:hCard commandApdu:[NSData dataWithBytes:command length:sizeof(command)]];
-    if (response == nil) {
+    if (![self responseOk:response]) {
         return nil;
     }
-    if (response.length < 2) {
-        NSLog(@"SCardTransmit failed - wrong response length");
-        return nil;
-    }
-    if (response.length != 13 + 2) {
+    if (response.length != CITIZEN_ID_LENGTH + 2) {
         NSLog(@"SCardTransmit failed - wrong thai id length");
         return nil;
     }
-    
     NSString *citizenId = [[NSString alloc] initWithBytesNoCopy:(void *)response.bytes length:(response.length - 2) encoding:thaiStringEncoding freeWhenDone:NO];
     return citizenId;
 }
@@ -282,14 +278,9 @@
 - (NSString *)readPersonalInfo:(SCARDHANDLE) hCard {
     BYTE command[] = { 0x80, 0xb0, 0x00, 0x11, 0x02, 0x00, 0xd1 };
     NSData *response = [self transmitAndGetResponse:hCard commandApdu:[NSData dataWithBytes:command length:sizeof(command)]];
-    if (response == nil) {
+    if (![self responseOk:response]) {
         return nil;
     }
-    if (response.length < 2) {
-        NSLog(@"SCardTransmit failed - wrong response length");
-        return nil;
-    }
-     
     NSString *personalInfo = [[NSString alloc] initWithBytesNoCopy:(void *)response.bytes length:(response.length - 2) encoding:thaiStringEncoding freeWhenDone:NO];
     return personalInfo;
 }
@@ -297,11 +288,7 @@
 - (NSString *)readAddress:(SCARDHANDLE)hCard {
     BYTE command[] = { 0x80, 0xb0, 0x15, 0x79, 0x02, 0x00, 0x64 };
     NSData *response = [self transmitAndGetResponse:hCard commandApdu:[NSData dataWithBytes:command length:sizeof(command)]];
-    if (response == nil) {
-        return nil;
-    }
-    if (response.length < 2) {
-        NSLog(@"SCardTransmit failed - wrong response length");
+    if (![self responseOk:response]) {
         return nil;
     }
     NSString *address = [[NSString alloc] initWithBytesNoCopy:(void *)response.bytes length:(response.length - 2) encoding:thaiStringEncoding freeWhenDone:NO];
@@ -311,14 +298,9 @@
 - (NSString *)readIssuedExpired:(SCARDHANDLE)hCard {
     BYTE command[] = { 0x80, 0xb0, 0x01, 0x67, 0x02, 0x00, 0x12 };
     NSData *response = [self transmitAndGetResponse:hCard commandApdu:[NSData dataWithBytes:command length:sizeof(command)]];
-    if (response == nil) {
+    if (![self responseOk:response]) {
         return nil;
     }
-    if (response.length < 2) {
-        NSLog(@"SCardTransmit failed - wrong response length");
-        return nil;
-    }
-    
     NSString *issuedExpired = [[NSString alloc] initWithBytesNoCopy:(void *)response.bytes length:(response.length - 2) encoding:thaiStringEncoding freeWhenDone:NO];
     return issuedExpired;
 }
@@ -356,6 +338,10 @@
         NSLog(@"SCardTransmit failed: res %X", res);
         return nil;
     }
+    if (responseLength < 2) {
+        NSLog(@"SCardTransmit failed - wrong response length");
+        return nil;
+    }
     return [NSData dataWithBytes:responseBytes length:responseLength];
 }
 
@@ -373,6 +359,25 @@
     
     BYTE getResponseCommand[] = { 0x00, 0xc0, 0x00, 0x00, sw2 };
     return [self transmit:hCard commandApdu:[NSData dataWithBytes:getResponseCommand length:sizeof(getResponseCommand)]];
+}
+
+- (BOOL)responseOk:(NSData *)response {
+    if (response == nil) {
+        return NO;
+    }
+    if (response.length < 2) {
+        return NO;
+    }
+    BYTE sw1 = ((BYTE *)response.bytes)[response.length - 2];
+    BYTE sw2 = ((BYTE *)response.bytes)[response.length - 1];
+    
+    if (sw1 == 0x61) {
+        return YES;
+    }
+    if (sw1 == 0x90 || sw2 == 0x00) {
+        return YES;
+    }
+    return NO;
 }
 
 - (NSArray *)listReadersWithContext:(SCARDCONTEXT)context {

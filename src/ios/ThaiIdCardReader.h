@@ -1,13 +1,13 @@
 //
-//  ThaiIdReader.h
-//  ThaiIdReader
+//  ThaiIdCardReader.h
+//  ThaiIdCardReader
 //
 //  Created by NewTech on 31/7/2563 BE.
 //  Copyright © 2563 NewTech. All rights reserved.
 //
 
-#ifndef ThaiIdReader_h
-#define ThaiIdReader_h
+#ifndef ThaiIdCardReader_h
+#define ThaiIdCardReader_h
 
 
 @interface ThaiIdCardReader : NSObject {
@@ -19,4 +19,4 @@
 @end
 
 
-#endif /* ThaiIdReader_h */
+#endif /* ThaiIdCardReader_h */
